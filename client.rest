@@ -10,21 +10,39 @@ POST {{baseUrl}}/recados/
 Content-Type: application/json
 
   {
-    "texto": "",
+    "texto": "recado novo",
     "de": "Joana",
-    "para": "João"
+    "para": "Joãom"
   }
 ###
-PATCH {{baseUrl}}/recados/3/
+PATCH {{baseUrl}}/recados/4/
 Content-Type: application/json
 
   {
     "texto": "NOVO recado de teste",
-    "de": "Joana",
-    "para": "João"
+    "lido":true
   }
 ###
-DELETE {{baseUrl}}/recados/2/
+DELETE {{baseUrl}}/recados/3/
+
+
+#
+
+
+# PESSOAS
+###
+GET {{baseUrl}}/pessoas/
+###
+GET {{baseUrl}}/pessoas/2/
+###
+POST {{baseUrl}}/pessoas/
+Content-Type: application/json
+
+  {
+    "nome": "Evandro",
+    "email":"email@email.com",
+    "password": "123456"
+  }
 
 
 
