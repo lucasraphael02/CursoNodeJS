@@ -7,4 +7,3 @@ import { ConceitosManualService } from './conceitos-manual.service';
   providers: [ConceitosManualService],
 })
 export class ConceitosManualModule {}
-    
