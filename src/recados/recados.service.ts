@@ -4,31 +4,41 @@ import { CreateRecadoDto } from './dto/create-recado.dto';
 import { UpdateRecadoDto } from './dto/update-recado.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PessoasService } from 'src/pessoas/pessoas.service';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class RecadosService {
   constructor(
     @InjectRepository(Recado)
     private readonly recadosRepository: Repository<Recado>,
+    private readonly pessoasService: PessoasService,
   ) {}
-  private lastId = 1;
-  private recados: Recado[] = [
-    {
-      id: 1,
-      texto: 'Este é um recado de teste',
-      de: 'Joana',
-      para: 'João',
-      lido: false,
-      data: new Date(),
-    },
-  ];
+
   throwNotFoundError() {
     // throw new HttpException('Recado não encontrado.', HttpStatus.NOT_FOUND);
     throw new NotFoundException('Recado não encontrado.');
   }
 
-  async findAll() {
-    const recados = await this.recadosRepository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    const recados = await this.recadosRepository.find({
+      take: limit,
+      skip: offset,
+      relations: ['de', 'para'],
+      order: { id: 'desc' },
+      select: {
+        de: {
+          id: true,
+          nome: true,
+        },
+        para: {
+          id: true,
+          nome: true,
+        },
+      },
+    });
     return recados;
   }
 
@@ -37,32 +47,60 @@ export class RecadosService {
       where: {
         id: id,
       },
+      relations: ['de', 'para'],
+      select: {
+        de: {
+          id: true,
+          nome: true,
+        },
+        para: {
+          id: true,
+          nome: true,
+        },
+      },
     });
-    if (recado) return recado;
-    this.throwNotFoundError();
+
+    if (!recado) {
+      throw new NotFoundException('Recado não encontrado.');
+    }
+    return recado;
   }
 
   async create(createRecadoDTO: CreateRecadoDto) {
+    const { deId, paraId } = createRecadoDTO;
+
+    const de = await this.pessoasService.findOne(deId);
+
+    const para = await this.pessoasService.findOne(paraId);
+
     const novoRecado = {
-      ...createRecadoDTO,
+      texto: createRecadoDTO.texto,
+      de: de,
+      para: para,
       lido: false,
       data: new Date(),
     };
     const recado = this.recadosRepository.create(novoRecado);
-    return this.recadosRepository.save(recado);
+    this.recadosRepository.save(recado);
+    return {
+      ...recado,
+      de: {
+        id: recado.de.id,
+      },
+      para: {
+        id: recado.para.id,
+      },
+    };
   }
 
   async update(id: number, updateRecadoDTO: UpdateRecadoDto) {
-    const partialRecado = {
-      lido: updateRecadoDTO?.lido,
-      texto: updateRecadoDTO?.texto,
-    };
-    const recado = await this.recadosRepository.preload({
-      id,
-      ...partialRecado,
-    });
-    if (!recado) return this.throwNotFoundError();
-    return this.recadosRepository.save(recado);
+    const recado = await this.findOne(id);
+
+    recado.texto = updateRecadoDTO?.texto ?? recado?.texto;
+    recado.lido = updateRecadoDTO?.lido ?? recado?.lido;
+
+    await this.recadosRepository.save(recado);
+    return recado;
   }
 
   async remove(id: number) {

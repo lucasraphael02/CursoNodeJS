@@ -3,24 +3,25 @@
 # RECADOS
 ###
 GET {{baseUrl}}/recados/
+?limit=10
+&offset=0
 ###
-GET {{baseUrl}}/recados/2/
+GET {{baseUrl}}/recados/13/
 ###
 POST {{baseUrl}}/recados/
 Content-Type: application/json
 
   {
-    "texto": "recado novo",
-    "de": "Joana",
-    "para": "Joãom"
+    "texto": "De 21 para 16",
+    "deId": 21,
+    "paraId": 16
   }
 ###
-PATCH {{baseUrl}}/recados/4/
+PATCH {{baseUrl}}/recados/9/
 Content-Type: application/json
 
   {
-    "texto": "NOVO recado de teste",
-    "lido":true
+    "texto":"Recado"
   }
 ###
 DELETE {{baseUrl}}/recados/3/
@@ -43,6 +44,26 @@ Content-Type: application/json
     "email":"email@email.com",
     "password": "123456"
   }
+
+###
+PATCH {{baseUrl}}/pessoas/16/
+Content-Type: application/json
+
+  {
+    
+    "password": "654321"
+  }
+
+
+###
+DELETE {{baseUrl}}/pessoas/20/
+
+
+
+
+
+
+
 
 
 
